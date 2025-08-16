@@ -5,12 +5,13 @@
   <title>Add Food | WasteLess</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="entry-form.css" />
-    <script>
-      window.API_ORIGIN =
-    (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-      ? 'http://localhost:5000'
-      : 'https://YOUR-BACKEND.onrender.com'; // <-- change this AFTER you deploy backend
-  </script>
+  <script>
+  // --------- Config (same-origin, no CORS headaches) ----------
+  // In prod the backend serves this file, so just use relative paths.
+  const API_ORIGIN = "";       // leave blank = same domain
+  const FOOD_API = "/api/food";
+  const USER_API_BASE = "/api/users";
+</script>
   <script src="auth.js"></script>
 </head>
 <body>
