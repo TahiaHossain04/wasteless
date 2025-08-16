@@ -415,3 +415,6 @@ header {
   justify-content: center;  /* centers the row as a whole */
   gap: 12px;
 }
+
+/* make the hidden attribute rock-solid */
+[hidden] { display: none !important; }

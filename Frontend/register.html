@@ -4,13 +4,6 @@
   <meta charset="UTF-8" />
   <title>Register | WasteLess</title>
   <link rel="stylesheet" href="style.css" />
-  <script>
-  // --------- Config (same-origin, no CORS headaches) ----------
-  // In prod the backend serves this file, so just use relative paths.
-  const API_ORIGIN = "";       // leave blank = same domain
-  const FOOD_API = "/api/food";
-  const USER_API_BASE = "/api/users";
-</script>
 </head>
 
 <body class="login-page">
@@ -81,7 +74,7 @@
       }
 
       try {
-        const res = await fetch("${window.API_ORIGIN}/api/users/register", {
+        const res = await fetch("http://localhost:5000/api/users/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username, email, password })

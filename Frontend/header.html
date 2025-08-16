@@ -1,15 +1,16 @@
-<header>
+<header id="siteHeader">
   <nav>
-    <a href="index.html">Home</a>
-    <a href="login.html">Login</a>
-    <a href="feed.html">Feed</a>
-    <a href="profile.html">My Profile</a>
-    <a href="entry-form.html">Item Entry</a>
-    <a href="chat.html">ChatBox</a>
-    <button class="nav-btn" type="button"
-  onclick="localStorage.removeItem('token'); localStorage.removeItem('userId'); localStorage.removeItem('username'); location.href='login.html'">
-  Logout
-</button>
+    <!-- PUBLIC -->
+    <a href="index.html" data-public>Home</a>
+    <a href="login.html" data-public data-hide-when-auth>Login</a>
 
+    <!-- PROTECTED (start hidden until JS confirms auth) -->
+    <a href="feed.html" data-protected hidden>Feed</a>
+    <a href="profile.html" data-protected hidden>My Profile</a>
+    <a href="entry-form.html" data-protected hidden>Item Entry</a>
+    <a href="chat.html" data-protected hidden>ChatBox</a>
+
+    <!-- Logout only when authed (start hidden) -->
+    <button id="logoutBtn" class="nav-btn" type="button" hidden>Logout</button>
   </nav>
 </header>

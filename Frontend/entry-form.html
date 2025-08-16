@@ -4,14 +4,8 @@
   <meta charset="UTF-8" />
   <title>Add Food | WasteLess</title>
   <link rel="stylesheet" href="style.css" />
+  <!-- Add this new page-specific stylesheet -->
   <link rel="stylesheet" href="entry-form.css" />
-  <script>
-  // --------- Config (same-origin, no CORS headaches) ----------
-  // In prod the backend serves this file, so just use relative paths.
-  const API_ORIGIN = "";       // leave blank = same domain
-  const FOOD_API = "/api/food";
-  const USER_API_BASE = "/api/users";
-</script>
   <script src="auth.js"></script>
 </head>
 <body>
@@ -207,7 +201,7 @@
       };
 
       try {
-        const res = await fetch("${window.API_ORIGIN}/api/food", {
+        const res = await fetch("http://localhost:5000/api/food", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

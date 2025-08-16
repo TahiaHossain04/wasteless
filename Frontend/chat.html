@@ -4,14 +4,7 @@
   <meta charset="UTF-8" />
   <title>Chat | WasteLess</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style.css" />\
-  <script>
-  // --------- Config (same-origin, no CORS headaches) ----------
-  // In prod the backend serves this file, so just use relative paths.
-  const API_ORIGIN = "";       // leave blank = same domain
-  const FOOD_API = "/api/food";
-  const USER_API_BASE = "/api/users";
-</script>
+  <link rel="stylesheet" href="style.css" />
   <script src="http://localhost:5000/socket.io/socket.io.js"></script>
   <style>
     /* Minimal chat polish (scoped) */
@@ -199,8 +192,8 @@
   }
 
   // ---- header info (best-effort)
-  const USER_API_BASE = "${window.API_ORIGIN}/api/users";
-  const FOOD_API_BASE = "${window.API_ORIGIN}/api/food";
+  const USER_API_BASE = "http://localhost:5000/api/users";
+  const FOOD_API_BASE = "http://localhost:5000/api/food";
   async function tryJSON(url){
     try{
       const r = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
