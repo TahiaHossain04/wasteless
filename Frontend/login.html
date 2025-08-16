@@ -4,6 +4,12 @@
   <meta charset="UTF-8" />
   <title>Login | WasteLess</title>
   <link rel="stylesheet" href="style.css" />
+    <script>
+      window.API_ORIGIN =
+    (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+      ? 'http://localhost:5000'
+      : 'https://YOUR-BACKEND.onrender.com'; // <-- change this AFTER you deploy backend
+  </script>
 </head>
 <body class="login-page">
   <div class="page-wrapper">
@@ -69,7 +75,7 @@
     errorMsg.textContent = "";
 
     try {
-      const res = await fetch("http://localhost:5000/api/users/login", {
+      const res = await fetch("${window.API_ORIGIN}/api/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })

@@ -5,6 +5,12 @@
   <title>Chat | WasteLess</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
+  <script>
+      window.API_ORIGIN =
+    (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+      ? 'http://localhost:5000'
+      : 'https://YOUR-BACKEND.onrender.com'; // <-- change this AFTER you deploy backend
+  </script>
   <script src="http://localhost:5000/socket.io/socket.io.js"></script>
   <style>
     /* Minimal chat polish (scoped) */
@@ -192,8 +198,8 @@
   }
 
   // ---- header info (best-effort)
-  const USER_API_BASE = "http://localhost:5000/api/users";
-  const FOOD_API_BASE = "http://localhost:5000/api/food";
+  const USER_API_BASE = "${window.API_ORIGIN}/api/users";
+  const FOOD_API_BASE = "${window.API_ORIGIN}/api/food";
   async function tryJSON(url){
     try{
       const r = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
