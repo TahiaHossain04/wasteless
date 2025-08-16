@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Food Feed | WasteLess</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="feed.css" />
+  <script>
+    // Optional header/footer include helper
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll("[include-html]").forEach(async el => {
+        const file = el.getAttribute("include-html");
+        if (!file) return;
+        try { const res = await fetch(file); el.innerHTML = await res.text(); } catch {}
+      });
+    });
+  </script>
+</head>
+<body>
+  <div include-html="header.html" id="headerWrapper"></div>
+
+  <main>
+    <!-- Toolbar -->
+    <section class="wl-toolbar" aria-label="Search and filters">
+      <div class="wl-searchbar">
+        <input id="searchInput" type="text" placeholder="Search to find food items" aria-label="Search to find food items">
+
+        <button id="filterBtn" class="wl-filter-btn" aria-haspopup="true" aria-expanded="false" aria-controls="filterMenu" title="Filters">
+          <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v2l-7 7v4l-4 2v-6L3 7V5z"/></svg>
+        </button>
+
+        <!-- Filter dropdown -->
+        <div id="filterMenu" class="wl-filter-menu" role="menu" aria-label="Filter options">
+          <div class="wl-filter-title">Filters</div>
+
+          <!-- Top-level choices -->
+          <div class="wl-filter-choices" style="display:flex; gap:8px; margin-bottom:10px;">
+            <button type="button" class="wl-geo-btn" data-open-panel="category">Category</button>
+            <button type="button" class="wl-geo-btn" data-open-panel="location">Location</button>
+            <button type="button" class="wl-geo-btn" data-open-panel="expiry">Expire date</button>
+          </div>
+
+          <!-- Panels -->
+          <div id="panel-category" class="wl-panel" hidden>
+            <div class="wl-filter-group">
+              <label>Pick categories</label>
+              <!-- Hardcoded list (checkboxes) -->
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                <label><input type="checkbox" class="catOpt" value="Vegetables"> Vegetables</label>
+                <label><input type="checkbox" class="catOpt" value="Fruits"> Fruits</label>
+                <label><input type="checkbox" class="catOpt" value="Bakery"> Bakery</label>
+                <label><input type="checkbox" class="catOpt" value="Prepared Meals"> Prepared Meals</label>
+                <label><input type="checkbox" class="catOpt" value="Dairy"> Dairy</label>
+                <label><input type="checkbox" class="catOpt" value="Meat"> Meat</label>
+                <label><input type="checkbox" class="catOpt" value="Seafood"> Seafood</label>
+                <label><input type="checkbox" class="catOpt" value="Grains"> Grains</label>
+                <label><input type="checkbox" class="catOpt" value="Snacks"> Snacks</label>
+                <label><input type="checkbox" class="catOpt" value="Beverages"> Beverages</label>
+              </div>
+            </div>
+          </div>
+
+          <div id="panel-location" class="wl-panel" hidden>
+            <div class="wl-filter-group">
+              <label>Choose nearby city</label>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                <label><input type="checkbox" class="locOpt" value="Oshawa"> Oshawa</label>
+                <label><input type="checkbox" class="locOpt" value="Pickering"> Pickering</label>
+                <label><input type="checkbox" class="locOpt" value="Ajax"> Ajax</label>
+                <label><input type="checkbox" class="locOpt" value="Whitby"> Whitby</label>
+                <label><input type="checkbox" class="locOpt" value="Scarborough"> Scarborough</label>
+                <label><input type="checkbox" class="locOpt" value="Toronto"> Toronto</label>
+              </div>
+            </div>
+          </div>
+
+          <div id="panel-expiry" class="wl-panel" hidden>
+            <div class="wl-filter-group">
+              <label>Expires</label>
+              <select id="expirySelect">
+                <option value="">Any time</option>
+                <option value="soon">Soon (≤ 6 hours)</option>
+                <option value="today">Today</option>
+                <option value="2days">1–2 days</option>
+                <option value="week">This week (≤ 7 days)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="wl-filter-actions">
+            <button id="clearFilters" type="button" class="wl-clear">Clear</button>
+            <button id="applyFilters" type="button" class="wl-apply">Apply</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="wl-sort-wrap">
+        <select id="sortSelect" class="wl-sort" aria-label="Sort">
+          <option value="closest">Closest</option>
+          <option value="newest">Newest</option>
+          <option value="expiring">Expiring soon</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Feed -->
+    <section aria-live="polite">
+      <div id="feedGrid" class="wl-grid"></div>
+    </section>
+  </main>
+
+  <div include-html="footer.html"></div>
+
+<script>
+  // --------- Auth gate ----------
+  (function authGuard() {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("⚠️ Please login to access this page.");
+      window.location.href = "login.html";
+    }
+  })();
+
+  // --------- Config ----------
+  // If you deploy the API elsewhere (e.g., Render/Heroku), set API_ORIGIN to that base URL.
+  // When running locally with the same origin proxy, you can leave it as "" and keep relative paths.
+const API_ORIGIN = "http://localhost:5000";
+const FOOD_API = `${API_ORIGIN}/api/food`;
+const USER_API_BASE = `${API_ORIGIN}/api/users`;
+
+
+  // --------- Small helpers ----------
+  const qs  = (s) => document.querySelector(s);
+  const qsa = (s) => Array.from(document.querySelectorAll(s));
+  const text = (v) => (v ?? "").toString().toLowerCase();
+
+  function minutesUntil(dateIso) {
+    if (!dateIso) return Infinity;
+    return Math.round((new Date(dateIso) - new Date()) / 60000);
+  }
+  function expiryBadge(expiresAt) {
+    if (!expiresAt) return { text: "No expiry", cls: "gray" };
+    const m = minutesUntil(expiresAt);
+    if (m <= 0) return { text: "Expired", cls: "red" };
+    if (m <= 60) return { text: `In ${m} min`, cls: "green" };
+    if (m <= 360) return { text: `${Math.ceil(m/60)} hr`, cls: "amber" };
+    const d = Math.ceil(m / 1440);
+    return { text: d <= 1 ? "Tomorrow" : `${d} days`, cls: "gray" };
+  }
+  function conditionBadge(cond) {
+    const map = { "fresh":"green", "good":"amber", "acceptable":"gray", "near expiry":"amber", "frozen":"gray", "opened":"gray" };
+    const cls = map[text(cond)] || "gray";
+    return { text: cond || "Unknown", cls };
+  }
+  function distanceBadge(km) {
+    if (km == null || isNaN(km)) return null;
+    return { text: `${Number(km).toFixed(1)} km`, cls: "gray" };
+  }
+  function tagBadge(tag) {
+    const urgent = /urgent|soon/i.test(tag);
+    return { text: tag, cls: urgent ? "amber" : "gray" };
+  }
+  function fmtDate(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (isNaN(d)) return "";
+    return d.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"numeric" });
+  }
+  function isToday(iso) {
+    const n = new Date();
+    const d = new Date(iso);
+    return d.getFullYear()===n.getFullYear() && d.getMonth()===n.getMonth() && d.getDate()===n.getDate();
+  }
+
+  // --- User id & inline name extraction (handles multiple shapes)
+  const userCache = new Map(); // id -> { name }
+  function getUserIdFromItem(item) {
+    return item.userId || item.user || item.ownerId || item.user?._id || item.user?.id || null;
+  }
+  function getInlineName(item) {
+    return item.ownerName || item.userName || item.username ||
+           item.user?.username || item.user?.name || item.user?.displayName || null;
+  }
+  async function fetchUserById(id) {
+    if (!id) return null;
+    if (userCache.has(id)) return userCache.get(id);
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`${USER_API_BASE}/${encodeURIComponent(id)}`, {
+        headers: token ? { "Authorization": `Bearer ${token}` } : {}
+      });
+      if (!res.ok) throw new Error("User fetch failed");
+      const u = await res.json();
+      const name = u.username || u.name || u.displayName || "User";
+      const obj = { id, name };
+      userCache.set(id, obj);
+      return obj;
+    } catch {
+      const obj = { id, name: "User" };
+      userCache.set(id, obj);
+      return obj;
+    }
+  }
+  async function populateOwnerNames(items) {
+    const toFetch = new Set();
+    for (const it of items) {
+      const inline = getInlineName(it);
+      if (inline) { it._ownerName = inline; continue; }
+      const uid = getUserIdFromItem(it);
+      if (!uid) { it._ownerName = "User"; continue; }
+      if (userCache.has(uid)) {
+        it._ownerName = userCache.get(uid).name;
+      } else {
+        toFetch.add(uid);
+      }
+    }
+    await Promise.all([...toFetch].map(fetchUserById));
+    for (const it of items) {
+      if (!it._ownerName) {
+        const uid = getUserIdFromItem(it);
+        it._ownerName = (uid && userCache.get(uid)?.name) || "User";
+      }
+    }
+  }
+
+  // --------- Normalize DB item to card shape ----------
+function normalizeItem(db) {
+  return {
+    id: db.id || db._id || db.itemId || db.uuid,
+    title: db.title || db.name || db.foodName || "Food item",
+    description: db.description || db.details || "",
+    imageUrl: db.imageUrl || db.photoUrl || db.image || (db.images && db.images[0]) || "",
+    category: db.category || db.type || "",
+    condition: db.condition || db.state || "",
+    quantityLabel: db.quantity || db.qty || db.amount || "",
+    distanceKm: db.distanceKm, // only if your API sends it
+    expiresAt: db.expiresAt || db.expiryDate || db.expires_on || db.expireAt || null,
+    tags: db.tags || db.labels || [],
+    status: db.status || "available",
+    locationLabel: db.locationLabel || db.location || db.city || db.area || "",
+    createdAt: db.createdAt || db.created_at || db.created || null,
+    user: db.user || db.userId || db.ownerId || db.owner || db.posterId || null
+  };
+}
+
+  // --------- Fetch from API (no mock) ----------
+const DEBUG_FEED = true;
+
+async function fetchFood() {
+  const token = localStorage.getItem("token");
+  const grid = qs("#feedGrid");
+  try {
+    const res = await fetch(FOOD_API, {
+      headers: token ? { "Authorization": `Bearer ${token}` } : {}
+    });
+
+    const ctype = (res.headers.get("content-type") || "").toLowerCase();
+    const raw = ctype.includes("application/json") ? await res.json() : await res.text();
+
+    if (DEBUG_FEED) {
+      console.log("📦 /api/food status:", res.status);
+      console.log("📦 /api/food payload:", raw);
+    }
+
+    if (!res.ok) {
+      const msg = typeof raw === "string" ? raw : (raw?.message || JSON.stringify(raw));
+      grid.innerHTML = `<p class='wl-sub'>Server error ${res.status}: ${msg}</p>`;
+      return [];
+    }
+
+    // 👇 KEY CHANGE: prefer raw.foodPosts, then other common keys, then fallback
+    let arr = [];
+    if (Array.isArray(raw)) {
+      arr = raw;
+    } else if (raw && typeof raw === "object") {
+      arr = raw.foodPosts || raw.items || raw.data || raw.results || raw.list || [];
+      if (!Array.isArray(arr)) {
+        const firstArray = Object.values(raw).find(v => Array.isArray(v));
+        arr = firstArray || [];
+      }
+    }
+
+    if (DEBUG_FEED) console.log("✅ items found:", Array.isArray(arr) ? arr.length : 0);
+    return (arr || []).map(normalizeItem);
+  } catch (e) {
+    console.error("Failed to load /api/food:", e);
+    grid.innerHTML = "<p class='wl-sub'>Couldn’t load items from the server.</p>";
+    return [];
+  }
+}
+
+
+  // --------- Render ----------
+  function cardTemplate(item) {
+    const expIso     = item.expiresAt;
+    const expBadge   = expiryBadge(expIso);
+    const cond       = conditionBadge(item.condition);
+    const dist       = distanceBadge(item.distanceKm);
+    const tags       = (item.tags || []).slice(0, 2);
+    const disabled   = item.status && item.status !== "available";
+    const location   = item.locationLabel || "";
+    const category   = item.category || "";
+    const ownerName  = item._ownerName || "User";
+    const ownerId    = getUserIdFromItem(item) || item.user || "";
+
+    return `
+      <article class="wl-card">
+        <img src="${item.imageUrl || 'https://picsum.photos/400?food'}" alt="${item.title}">
+        <div class="wl-card-body">
+          <div class="wl-title-row">
+            <div class="wl-title">${item.title}</div>
+            <button class="wl-icon-btn wl-chat"
+                    title="Chat with ${ownerName}"
+                    aria-label="Chat with ${ownerName}"
+                    data-id="${item.id}"
+                    data-to="${ownerId}">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 4h16v10H7l-3 3V4z"></path>
+              </svg>
+            </button>
+          </div>
+
+          <ul class="wl-meta">
+            <li>👤 ${ownerName}</li>
+            <li class="dot"></li>
+            <li>🏷️ ${category || "—"}</li>
+            <li class="dot"></li>
+            <li>🗓️ ${fmtDate(expIso) || "—"}</li>
+            <li class="dot"></li>
+            <li>📍 ${location || "—"}</li>
+          </ul>
+
+          <div class="wl-badges" style="margin-top:6px;">
+            <span class="badge ${cond.cls}">${cond.text}</span>
+            ${dist ? `<span class="badge ${dist.cls}">${dist.text}</span>` : ""}
+            <span class="badge ${expBadge.cls}">${expBadge.text}</span>
+            ${tags.map(t => `<span class="badge ${tagBadge(t).cls}">${t}</span>`).join("")}
+          </div>
+
+          <div class="wl-card-footer">
+            <small class="wl-sub">${category || ""}</small>
+            <button class="wl-claim" data-id="${item.id}" ${disabled ? "disabled" : ""}>
+              ${disabled ? "Unavailable" : "Claim"}
+            </button>
+          </div>
+        </div>
+      </article>
+    `;
+  }
+
+  // --------- Client-side filtering state ----------
+  const state = {
+    search: "",
+    categories: new Set(),
+    locations: new Set(),
+    expiry: "",       // "", "soon", "today", "2days", "week"
+    sort: "closest",
+    allItems: [],
+  };
+  function setSearch(val){ state.search = text(val); }
+  function setSort(val){ state.sort = val || "closest"; }
+
+  function filterItems() {
+    const { search, categories, locations, expiry } = state;
+
+    let out = state.allItems.filter(item => {
+      const title = text(item.title);
+      const d = text(item.description);
+      const cat = text(item.category);
+      const loc = text(item.locationLabel);
+
+      if (search && !title.includes(search) && !d.includes(search)) return false;
+
+      if (categories.size) {
+        const match = [...categories].some(c =>
+          cat.includes(text(c)) || title.includes(text(c)) || d.includes(text(c))
+        );
+        if (!match) return false;
+      }
+
+      if (locations.size) {
+        const match = [...locations].some(city => loc.includes(text(city)));
+        if (!match) return false;
+      }
+
+      const expIso = item.expiresAt;
+      if (expiry) {
+        const m = minutesUntil(expIso);
+        if (m === Infinity) return false;
+        const dleft = m / 1440;
+        if (expiry === "soon"  && !(m <= 360)) return false;   // ≤ 6h
+        if (expiry === "today" && !isToday(expIso)) return false;
+        if (expiry === "2days" && !(dleft <= 2)) return false; // ≤ 2 days
+        if (expiry === "week"  && !(dleft <= 7)) return false; // ≤ 7 days
+      }
+
+      return true;
+    });
+
+    if (state.sort === "expiring") {
+      out.sort((a,b) => (new Date(a.expiresAt||'2999-01-01')) - (new Date(b.expiresAt||'2999-01-01')));
+    } else if (state.sort === "newest") {
+      out.sort((a,b) => (new Date(b.createdAt||b.expiresAt||0)) - (new Date(a.createdAt||a.expiresAt||0)));
+    } else {
+      out.sort((a,b) => (a.distanceKm ?? 1e9) - (b.distanceKm ?? 1e9));
+    }
+
+    return out;
+  }
+
+  async function renderFeed() {
+    const grid = qs("#feedGrid");
+    grid.innerHTML = "<p class='wl-sub'>Loading...</p>";
+
+    if (!state.allItems.length) {
+      state.allItems = await fetchFood();
+      await populateOwnerNames(state.allItems);
+    }
+
+    const items = filterItems();
+
+    if (!items.length) {
+      grid.innerHTML = "<p class='wl-sub'>No items match your filters.</p>";
+      return;
+    }
+    grid.innerHTML = items.map(cardTemplate).join("");
+
+    // Claim
+    grid.querySelectorAll(".wl-claim:not([disabled])").forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        const id = e.currentTarget.getAttribute("data-id");
+        await claimItem(id, e.currentTarget);
+      });
+    });
+
+    // Chat
+    grid.querySelectorAll(".wl-chat").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const id = e.currentTarget.getAttribute("data-id");
+        const to = e.currentTarget.getAttribute("data-to") || "";
+        window.location.href = `chat.html?item=${encodeURIComponent(id)}&to=${encodeURIComponent(to)}`;
+      });
+    });
+  }
+
+  async function claimItem(id, btn) {
+    const token = localStorage.getItem("token");
+    try {
+      btn.disabled = true; btn.textContent = "Claiming...";
+      const res = await fetch(`${FOOD_API}/${encodeURIComponent(id)}/claim`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        }
+      });
+      if (!res.ok) throw new Error("Failed to claim");
+      btn.textContent = "Claimed";
+    } catch (err) {
+      console.error(err);
+      btn.disabled = false; btn.textContent = "Claim";
+      alert("Could not claim this item. Please try again.");
+    }
+  }
+
+  // --------- UI wiring (filters) ----------
+  const filterBtn   = document.getElementById("filterBtn");
+  const filterMenu  = document.getElementById("filterMenu");
+  const applyBtn    = document.getElementById("applyFilters");
+  const clearBtn    = document.getElementById("clearFilters");
+  const searchInput = document.getElementById("searchInput");
+  const sortSelect  = document.getElementById("sortSelect");
+
+  qsa("[data-open-panel]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const target = btn.getAttribute("data-open-panel");
+      ["category","location","expiry"].forEach(id => {
+        const panel = document.getElementById(`panel-${id}`);
+        if (!panel) return;
+        panel.hidden = id !== target || !panel.hidden ? false : panel.hidden;
+        if (id !== target) panel.hidden = true;
+      });
+      document.getElementById(`panel-${target}`).hidden = false;
+    });
+  });
+
+  function closeMenu() {
+    filterMenu.classList.remove("open");
+    filterBtn.setAttribute("aria-expanded", "false");
+    ["panel-category","panel-location","panel-expiry"].forEach(id => {
+      const p = document.getElementById(id);
+      if (p) p.hidden = true;
+    });
+  }
+  function openMenu() {
+    filterMenu.classList.add("open");
+    filterBtn.setAttribute("aria-expanded", "true");
+  }
+
+  filterBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isOpen = filterMenu.classList.contains("open");
+    isOpen ? closeMenu() : openMenu();
+  });
+  document.addEventListener("click", (e) => {
+    if (!filterMenu.contains(e.target) && e.target !== filterBtn) closeMenu();
+  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeMenu(); });
+
+  searchInput.addEventListener("input", debounce(() => {
+    setSearch(searchInput.value);
+    renderFeed();
+  }, 250));
+
+  sortSelect.addEventListener("change", () => {
+    setSort(sortSelect.value);
+    renderFeed();
+  });
+
+  // category checkboxes
+  qsa(".catOpt").forEach(cb => {
+    cb.addEventListener("change", () => {
+      cb.checked ? state.categories.add(cb.value) : state.categories.delete(cb.value);
+    });
+  });
+  // location checkboxes
+  qsa(".locOpt").forEach(cb => {
+    cb.addEventListener("change", () => {
+      cb.checked ? state.locations.add(cb.value) : state.locations.delete(cb.value);
+    });
+  });
+  // expiry select
+  document.getElementById("expirySelect").addEventListener("change", (e) => {
+    state.expiry = e.target.value || "";
+  });
+
+  applyBtn.addEventListener("click", () => { renderFeed(); closeMenu(); });
+  clearBtn.addEventListener("click", () => {
+    state.search = "";
+    state.categories.clear();
+    state.locations.clear();
+    state.expiry = "";
+    searchInput.value = "";
+    document.getElementById("expirySelect").value = "";
+    qsa(".catOpt, .locOpt").forEach(cb => cb.checked = false);
+    renderFeed();
+  });
+
+  function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; }
+
+  // --------- Start ----------
+  document.addEventListener("DOMContentLoaded", renderFeed);
+</script>
+
+
+</body>
+</html>

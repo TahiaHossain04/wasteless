@@ -1,0 +1,138 @@
+/* ====== Entry Form (wizard) ====== */
+.ef-main {
+  max-width: 760px;           /* a bit wider than your default 800px main */
+  margin: 120px auto 40px;
+  padding: 0 16px;
+}
+
+.ef-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.08);
+  padding: 18px 20px 22px;
+}
+
+/* Stepper */
+.ef-steps {
+  display: flex;
+  gap: 16px;
+  list-style: none;
+  margin: 4px 0 10px;
+  padding: 0;
+  color: #6b7280;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.ef-steps li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ef-steps li span {
+  display: inline-grid;
+  place-items: center;
+  width: 24px; height: 24px;
+  border-radius: 999px;
+  border: 2px solid #d1d5db;
+  background: #fff;
+  font-size: 0.8rem;
+}
+.ef-steps li.active span {
+  border-color: #145c41;
+  background: #e6f4ee;
+  color: #145c41;
+}
+.ef-steps li.done span {
+  border-color: #145c41;
+  background: #145c41;
+  color: #fff;
+}
+
+/* Title */
+.ef-title {
+  font-size: 28px;
+  margin: 6px 0 14px;
+  color: #111827;
+  font-weight: 800;
+}
+
+/* Fields */
+.ef-field { margin-bottom: 14px; }
+.ef-field label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #374151;
+}
+.ef-field input,
+.ef-field select {
+  width: 100%;
+  padding: 12px 12px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  font-size: 0.98rem;
+}
+.ef-field input:focus,
+.ef-field select:focus {
+  outline: none;
+  border-color: #145c41;
+  box-shadow: 0 0 0 3px rgba(20,92,65,0.15);
+}
+.ef-hint {
+  display: block;
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin-top: 6px;
+}
+
+/* Two-column row */
+.ef-row {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr 1fr;
+}
+@media (max-width: 640px) {
+  .ef-row { grid-template-columns: 1fr; }
+}
+
+/* Review list */
+.ef-review h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+  color: #111827;
+}
+.ef-review-list {
+  margin: 0;
+  padding-left: 18px;
+  color: #374151;
+}
+.ef-review-list li { margin: 6px 0; }
+
+/* Actions */
+.ef-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+.ef-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.ef-primary {
+  background: #e5a53b; /* gold like your mock */
+  color: #fff;
+}
+.ef-primary:hover { background: #cb8f2d; }
+.ef-secondary {
+  background: #eef2f7;
+  color: #111827;
+}
+.ef-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

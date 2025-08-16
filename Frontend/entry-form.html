@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Add Food | WasteLess</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Add this new page-specific stylesheet -->
+  <link rel="stylesheet" href="entry-form.css" />
+  <script src="auth.js"></script>
+</head>
+<body>
+  <div include-html="header.html"></div>
+
+  <main class="ef-main">
+    <div class="ef-card">
+
+      <!-- Stepper -->
+      <ol class="ef-steps" aria-label="Steps">
+        <li class="active"><span>1</span> Photo</li>
+        <li><span>2</span> Details</li>
+        <li><span>3</span> Pickup info</li>
+        <li><span>4</span> Review</li>
+      </ol>
+
+      <h1 class="ef-title">Food Entry Form</h1>
+
+      <form id="foodForm" novalidate>
+        <!-- STEP 1: Photo -->
+        <fieldset class="ef-step" data-step="1">
+          <div class="ef-field">
+            <label for="photo">Photo</label>
+            <input type="file" id="photo" />
+            <small class="ef-hint">Add a clear photo of the item (optional).</small>
+          </div>
+        </fieldset>
+
+        <!-- STEP 2: Details -->
+        <fieldset class="ef-step" data-step="2" hidden>
+          <div class="ef-field">
+            <label for="foodName">Food name</label>
+            <input type="text" id="foodName" required />
+          </div>
+
+          <div class="ef-field">
+            <label for="description">Description</label>
+            <!-- stays input (not textarea) to keep your current field type -->
+            <input type="text" id="description" required />
+          </div>
+
+          <div class="ef-field">
+            <label for="category">Category</label>
+            <select id="category" required>
+              <option value="">Select category</option>
+              <option value="Fruits">Fruits</option>
+              <option value="Vegetables">Vegetables</option>
+              <option value="Dairy">Dairy</option>
+              <option value="Meat">Meat</option>
+              <option value="Grains">Grains</option>
+              <option value="Baked Goods">Baked Goods</option>
+              <option value="Prepared Meals">Prepared Meals</option>
+              <option value="Beverages">Beverages</option>
+              <option value="Snacks">Snacks</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="ef-row">
+            <div class="ef-field">
+              <label for="expiryDate">Expiry date</label>
+              <input type="date" id="expiryDate" required />
+            </div>
+
+            <div class="ef-field">
+              <label for="quantity">Quantity</label>
+              <input type="text" id="quantity" placeholder="e.g., 3 or 1kg" required />
+            </div>
+          </div>
+
+          <div class="ef-field">
+            <label for="condition">Condition</label>
+            <select id="condition" required>
+              <option value="">Select condition</option>
+              <option value="Fresh">Fresh</option>
+              <option value="Near Expiry">Near Expiry</option>
+              <option value="Frozen">Frozen</option>
+              <option value="Opened">Opened</option>
+            </select>
+          </div>
+        </fieldset>
+
+        <!-- STEP 3: Pickup info -->
+        <fieldset class="ef-step" data-step="3" hidden>
+          <div class="ef-field">
+            <label for="location">Location</label>
+            <input type="text" id="location" placeholder="e.g., Toronto" required />
+          </div>
+
+          <div class="ef-field">
+            <label for="comment">Comment (optional)</label>
+            <input type="text" id="comment" placeholder="Any notes..." />
+          </div>
+        </fieldset>
+
+        <!-- STEP 4: Review -->
+        <fieldset class="ef-step" data-step="4" hidden>
+          <div class="ef-review" id="reviewList">
+            <!-- Populated automatically before submit -->
+          </div>
+        </fieldset>
+
+        <!-- Actions -->
+        <div class="ef-actions">
+          <button type="button" class="ef-btn ef-secondary" id="backBtn" disabled>Back</button>
+          <button type="button" class="ef-btn ef-primary" id="nextBtn">Next</button>
+          <!-- real submit stays the same functionality -->
+          <button type="submit" class="ef-btn ef-primary" id="submitBtn" hidden>Submit</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <div include-html="footer.html"></div>
+
+  <script>
+    // ------- multi-step UI (keeps your submit code intact) -------
+    const steps   = Array.from(document.querySelectorAll(".ef-step"));
+    const dots    = Array.from(document.querySelectorAll(".ef-steps li"));
+    const backBtn = document.getElementById("backBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const submitBtn = document.getElementById("submitBtn");
+    const reviewList = document.getElementById("reviewList");
+
+    let stepIndex = 0; // 0..3
+
+    function showStep(i) {
+      steps.forEach((fs, idx) => fs.hidden = idx !== i);
+      dots.forEach((li, idx) => {
+        li.classList.toggle("active", idx === i);
+        li.classList.toggle("done", idx < i);
+      });
+
+      backBtn.disabled = i === 0;
+      nextBtn.hidden   = i === steps.length - 1;
+      submitBtn.hidden = i !== steps.length - 1;
+
+      if (i === steps.length - 1) fillReview();
+    }
+
+    function fillReview() {
+      const get = id => (document.getElementById(id)?.value || "").trim();
+      reviewList.innerHTML = `
+        <h3>Review your entry</h3>
+        <ul class="ef-review-list">
+          <li><strong>Food name:</strong> ${get("foodName")}</li>
+          <li><strong>Description:</strong> ${get("description")}</li>
+          <li><strong>Category:</strong> ${get("category")}</li>
+          <li><strong>Expiry date:</strong> ${get("expiryDate")}</li>
+          <li><strong>Quantity:</strong> ${get("quantity")}</li>
+          <li><strong>Condition:</strong> ${get("condition")}</li>
+          <li><strong>Location:</strong> ${get("location")}</li>
+          <li><strong>Comment:</strong> ${get("comment") || "—"}</li>
+        </ul>
+        <p class="ef-hint">Tap Submit to post this item.</p>
+      `;
+    }
+
+    backBtn.addEventListener("click", () => {
+      if (stepIndex > 0) { stepIndex--; showStep(stepIndex); }
+    });
+
+    nextBtn.addEventListener("click", () => {
+      // simple per-step required check
+      const required = steps[stepIndex].querySelectorAll("[required]");
+      for (const el of required) {
+        if (!el.value) { el.focus(); return; }
+      }
+      if (stepIndex < steps.length - 1) { stepIndex++; showStep(stepIndex); }
+    });
+
+    // init
+    showStep(stepIndex);
+
+    // ------- your existing submit logic (unchanged) -------
+    document.getElementById("foodForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const name        = document.getElementById("foodName").value;
+      const description = document.getElementById("description").value;
+      const category    = document.getElementById("category").value;
+      const expiryDate  = document.getElementById("expiryDate").value;
+      const quantity    = document.getElementById("quantity").value;
+      const location    = document.getElementById("location").value;
+      const condition   = document.getElementById("condition").value;
+      const comment     = document.getElementById("comment").value;
+      const userId      = localStorage.getItem("userId");
+      const token       = localStorage.getItem("token");
+
+      const foodPost = {
+        name, description, category, expiryDate, quantity,
+        location, condition, user: userId, comment
+      };
+
+      try {
+        const res = await fetch("http://localhost:5000/api/food", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(foodPost)
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          alert("✅ Food entry added!");
+          window.location.href = "profile.html";
+        } else {
+          alert(data.message || "❌ Failed to submit.");
+        }
+      } catch (err) {
+        console.error("Submit error:", err);
+        alert("❌ Error submitting food entry.");
+      }
+    });
+  </script>
+
+  <script src="main.js"></script>
+</body>
+</html>

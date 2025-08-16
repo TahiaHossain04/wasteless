@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Profile | WasteLess</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="feed.css" />
+  <link rel="stylesheet" href="profile.css" />
+  <script src="auth.js" defer></script>
+  <script>
+    // Simple header/footer include (optional)
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll("[include-html]").forEach(async el => {
+        const file = el.getAttribute("include-html");
+        if (!file) return;
+        try { const res = await fetch(file); el.innerHTML = await res.text(); } catch {}
+      });
+    });
+  </script>
+</head>
+<body>
+  <div include-html="header.html"></div>
+
+  <main class="pf-main">
+    <div class="pf-card">
+      <!-- hero -->
+      <section class="pf-hero">
+        <div class="pf-avatar" aria-hidden="true">👤</div>
+        <h1 id="welcomeText" class="pf-title">Welcome, User</h1>
+      </section>
+
+      <!-- tabs -->
+      <nav class="pf-tabs" aria-label="Profile sections">
+        <div class="pf-tab-buttons">
+          <button class="pf-tab active" data-tab="posts">Your Posts</button>
+          <button class="pf-tab" data-tab="claimed">Claimed</button>
+          <button class="pf-tab" data-tab="stats">Stats</button>
+        </div>
+        <div id="savedMetric" class="pf-metric" aria-live="polite"></div>
+      </nav>
+
+      <!-- posts panel -->
+      <section id="postsPanel">
+        <!-- use the SAME grid/card classes as feed -->
+        <div id="postsGrid" class="wl-grid">
+          <p class="pf-empty">Loading...</p>
+        </div>
+      </section>
+
+      <!-- claimed panel -->
+      <section id="claimedPanel" hidden>
+        <div id="claimedGrid" class="wl-grid">
+          <p class="pf-empty">Loading...</p>
+        </div>
+      </section>
+
+      <!-- stats panel -->
+      <section id="statsPanel" hidden>
+        <div class="pf-stats">
+          <div class="pf-stat"><span id="statPosts">0</span><small>Your posts</small></div>
+          <div class="pf-stat"><span id="statClaimed">0</span><small>Claimed</small></div>
+          <div class="pf-stat"><span id="statUpcoming">0</span><small>Not expired</small></div>
+          <div class="pf-stat"><span id="statExpired">0</span><small>Expired</small></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div include-html="footer.html"></div>
+  <script src="main.js"></script>
+
+<script src="main.js"></script>
+
+<script>
+  // if userId is missing, recover it from the JWT once:
+  (function ensureUserIdFromJWT(){
+    const t = localStorage.getItem('token');
+    if (!t) return;
+    try {
+      const payload = JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+      const uid = payload.id || payload.userId || payload._id || payload.sub;
+      if (uid && !localStorage.getItem('userId')) {
+        localStorage.setItem('userId', uid);
+        console.log('✅ userId set to', uid);
+      }
+    } catch (e) {
+      console.warn('JWT decode failed', e);
+    }
+  })();
+</script>
+
+
+
+</body>
+</html>

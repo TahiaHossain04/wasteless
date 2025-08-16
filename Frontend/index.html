@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>WasteLess — Share surplus food, reduce waste</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="home.css" />
+</head>
+<body>
+
+  <!-- your existing shared header/nav -->
+  <div include-html="header.html" id="headerWrapper"></div>
+
+  <!-- Landing content -->
+  <div class="hp-main" role="main">
+    <div class="hp-container">
+
+      <!-- HERO -->
+      <section class="hp-hero">
+        <div class="hp-hero-copy">
+          <h1>Reducing Food Waste, One Share at a Time</h1>
+          <p>WasteLess connects neighbors who have surplus food with people nearby who can use it. Post extra items, claim what you need, and help the planet while helping each other.</p>
+
+          <div class="hp-ctas">
+            <a class="hp-btn hp-btn-primary" href="register.html">Join WasteLess Today</a>
+            <a class="hp-btn hp-btn-ghost" href="login.html">I already have an account</a>
+          </div>
+        </div>
+
+        <!-- image placeholder — swap with your own later -->
+        <div class="hp-hero-media">
+          <div class="hp-img-placeholder" aria-label="Illustration placeholder"></div>
+        </div>
+      </section>
+
+      <!-- HOW IT WORKS -->
+      <section class="hp-how">
+        <h2>How It Works</h2>
+        <ol class="hp-steps">
+          <li class="hp-step">
+            <div class="hp-step-icon"></div>
+            <h3>Sign Up</h3>
+            <p>Create an account to join the community.</p>
+          </li>
+          <li class="hp-step"><div class="hp-step-arrow" aria-hidden="true">→</div></li>
+          <li class="hp-step">
+            <div class="hp-step-icon"></div>
+            <h3>Share Food</h3>
+            <p>Post surplus items with a photo and pickup details.</p>
+          </li>
+          <li class="hp-step"><div class="hp-step-arrow" aria-hidden="true">→</div></li>
+          <li class="hp-step">
+            <div class="hp-step-icon"></div>
+            <h3>Connect</h3>
+            <p>Chat to arrange pickup with interested neighbors.</p>
+          </li>
+          <li class="hp-step"><div class="hp-step-arrow" aria-hidden="true">→</div></li>
+          <li class="hp-step">
+            <div class="hp-step-icon"></div>
+            <h3>Reduce Waste</h3>
+            <p>Keep good food out of the bin and do some good.</p>
+          </li>
+        </ol>
+      </section>
+
+      <!-- OUR IMPACT -->
+      <section class="hp-impact">
+        <h2>Our Impact</h2>
+        <div class="hp-kpis">
+          <div class="hp-kpi">
+            <span class="hp-kpi-value" data-target="5200">0</span>
+            <span class="hp-kpi-label">Total food shares</span>
+          </div>
+          <div class="hp-kpi">
+            <span class="hp-kpi-value" data-target="8100">0</span>
+            <span class="hp-kpi-label">kg of CO₂e prevented</span>
+          </div>
+          <div class="hp-kpi">
+            <span class="hp-kpi-value" data-target="12500">0</span>
+            <span class="hp-kpi-label">Community members</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- TESTIMONIALS -->
+      <section class="hp-testimonials">
+        <h2>Testimonials</h2>
+        <div class="hp-testi-grid">
+          <article class="hp-testi">
+            <div class="hp-avatar"></div>
+            <blockquote>“WasteLess makes it easy to share extra food with my neighbors. I love seeing it get used!”</blockquote>
+            <cite>— Kathleen M.</cite>
+          </article>
+
+          <article class="hp-testi">
+            <div class="hp-avatar"></div>
+            <blockquote>“I’ve cut down on waste and met great people nearby. Such a simple idea that just works.”</blockquote>
+            <cite>— James R.</cite>
+          </article>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section class="hp-faq">
+        <h2>FAQs</h2>
+        <div class="hp-accordion">
+          <details>
+            <summary>Is it safe?</summary>
+            <p>Keep items chilled as required and share accurate expiry info. Only post food you would eat yourself.</p>
+          </details>
+          <details>
+            <summary>What can I share?</summary>
+            <p>Packaged goods, baked items, produce, cooked meals (clearly labeled), and more—follow local guidelines.</p>
+          </details>
+          <details>
+            <summary>Where is it available?</summary>
+            <p>WasteLess works anywhere—list items with your area and arrange pickup via chat.</p>
+          </details>
+          <details>
+            <summary>Is it really free?</summary>
+            <p>Yep. Sharing food is free. Please be kind and respectful when coordinating pickups.</p>
+          </details>
+        </div>
+
+        <div class="hp-cta-banner">
+          <div>
+            <h3>Ready to start sharing?</h3>
+            <p>Create an account to post items or claim what you need.</p>
+          </div>
+          <a class="hp-btn hp-btn-primary" href="register.html">Register</a>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- your shared footer -->
+  <div include-html="footer.html"></div>
+
+  <!-- if your project already loads the include logic in main.js, keep it here -->
+  <script src="main.js"></script>
+
+  <script>
+    // Small KPI count-up animation
+    const els = document.querySelectorAll('.hp-kpi-value');
+    const animate = (el) => {
+      const target = Number(el.dataset.target || 0);
+      const dur = 900;
+      const start = performance.now();
+      function tick(t){
+        const p = Math.min(1, (t - start) / dur);
+        el.textContent = Math.floor(target * p).toLocaleString();
+        if (p < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    };
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { animate(e.target); obs.unobserve(e.target); } });
+    }, { threshold: 0.4 });
+    els.forEach(el => obs.observe(el));
+  </script>
+</body>
+</html>

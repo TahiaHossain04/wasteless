@@ -1,0 +1,417 @@
+/* Reset some default browser styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* General Page Styles */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f7f7f7;
+  color: #333;
+  line-height: 1.6;
+}
+
+main {
+  padding: 20px;
+  max-width: 800px;
+  margin: auto;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Header */
+header {
+  background-color: #4CAF50;
+  color: white;
+  padding: 15px 20px;
+  text-align: center;
+}
+
+header nav {
+  margin-top: 10px;
+}
+
+header nav a {
+  color: white;
+  text-decoration: none;
+  margin: 0 10px;
+  font-weight: bold;
+}
+
+header nav a:hover {
+  text-decoration: underline;
+}
+
+/* Footer */
+footer {
+  background-color: #333;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  margin-top: 40px;
+}
+
+/* Forms */
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+form input,
+form select,
+form textarea {
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+form button {
+  padding: 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+form button:hover {
+  background-color: #45a049;
+}
+
+/* Food Cards in Feed */
+.feed-list {
+  margin-top: 20px;
+}
+
+.food-card {
+  background-color: #e8ffe8;
+  border-left: 5px solid #4CAF50;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+.food-card button {
+  margin-top: 10px;
+}
+
+/* Chat Styles */
+.chat-box {
+  background-color: #f1f1f1;
+  padding: 15px;
+  border-radius: 5px;
+  height: 250px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
+.message {
+  background-color: white;
+  padding: 8px;
+  margin: 5px 0;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.chat-box + input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+}
+
+.chat-box + button {
+  margin-top: 5px;
+}
+
+/* Filters Section */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.filters label {
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.filters select,
+.filters input {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+
+/* LOGIN PAGE */
+.login-page {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f7f7f7;
+}
+
+.login-container {
+  display: flex;
+  width: 100%;
+  max-width: 1200px;
+  height: 90vh;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 15px;
+  overflow: hidden;
+  background-color: white;
+}
+
+.login-image {
+  flex: 1;
+  background-color: #eaf1ea;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-image img {
+  width: 100%; /* or try 400px or whatever fits best */
+  max-width: 800px; /* optional: set a limit */
+  height: auto;
+}
+
+
+.login-form-section {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.login-form-wrapper {
+  width: 100%;
+  max-width: 350px;
+}
+
+.login-form-wrapper .logo {
+  width: 50px;
+  height: auto;
+  margin-bottom: 10px;
+}
+
+.login-form-wrapper h1 {
+  font-size: 28px;
+  color: #1d4f3f;
+  margin-bottom: 10px;
+}
+
+.login-form-wrapper h2 {
+  font-size: 20px;
+  margin: 20px 0 10px;
+  color: #333;
+}
+
+form input[type="email"],
+form input[type="password"] {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.primary-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #d49d3b;
+  border: none;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.primary-btn:hover {
+  background-color: #b57f2d;
+}
+
+.error-msg {
+  color: red;
+  margin-bottom: 5px;
+}
+
+.register-link {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+/* === Auth Screens (Login/Register) === */
+.auth-body {
+  background-color: #f5fdf5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.auth-container {
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.auth-logo {
+  display: block;
+  margin: 0 auto 20px auto;
+  width: 80px;
+}
+
+.auth-form-section h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #2f4f2f;
+}
+
+.auth-form-section form label {
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.auth-form-section input {
+  width: 100%;
+  padding: 10px;
+  margin: 6px 0 14px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.btn {
+  width: 100%;
+  background-color: #4F8A4F;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background-color: #407240;
+}
+
+.auth-switch {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.auth-switch a {
+  color: #4F8A4F;
+  text-decoration: none;
+}
+
+.auth-switch a:hover {
+  text-decoration: underline;
+}
+
+.error-text {
+  color: red;
+  margin: 0 0 10px 0;
+  font-size: 0.9em;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+nav .nav-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+  padding: 5px 10px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+nav .nav-btn:hover {
+  text-decoration: underline;
+}
+
+#headerWrapper {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+header {
+  width: 100%;
+}
+
+.auth-main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  min-height: 100vh;
+  padding-top: 120px; /* Push content below fixed header */
+  box-sizing: border-box;
+}
+
+/* Sticky chat reminder */
+.chat-notice{
+  position: sticky; top: 8px; z-index: 5;
+  display: grid; grid-template-columns: auto 1fr; gap: 10px;
+  background: #fff8e6; /* light gold */
+  border: 1px solid #f0d39b;
+  color: #5a4c2a;
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: 0 3px 10px rgba(0,0,0,.04);
+  margin: 6px 0 12px;
+}
+.chat-notice-icon{
+  width: 28px; height: 28px; border-radius: 8px;
+  display: grid; place-items: center;
+  background: #fde9bf;
+  font-size: 18px;
+}
+.chat-notice-body ul{
+  margin: 6px 0 0 18px; padding: 0;
+}
+.chat-notice a{ color: #8a6315; font-weight: 700; text-decoration: none; }
+.chat-notice a:hover{ text-decoration: underline; }
+
+/* one-line centered header (logo + nav in a row) */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: center;  /* centers the row as a whole */
+  gap: 12px;
+}

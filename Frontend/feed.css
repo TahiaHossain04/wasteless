@@ -1,0 +1,248 @@
+/* ===========================
+   WasteLess Feed (scoped CSS)
+   =========================== */
+
+/* Theme tokens — tweak to match your palette */
+:root {
+  --wl-bg: #f7f7f7;
+  --wl-card: #ffffff;
+  --wl-border: #dcdcdc;
+  --wl-border-strong: #e6e6e6;
+  --wl-text: #222;
+  --wl-text-sub: #5b5b5b;
+  --wl-accent: #4CAF50;
+  --wl-action: #e5a53b;
+
+  --wl-badge-green-bg: #e7f7ea;
+  --wl-badge-green-fg: #287a3e;
+  --wl-badge-amber-bg: #fff3d6;
+  --wl-badge-amber-fg: #8a5d15;
+  --wl-badge-red-bg: #ffe7e7;
+  --wl-badge-red-fg: #8a1f1f;
+  --wl-badge-gray-bg: #eef0f2;
+  --wl-badge-gray-fg: #49515a;
+
+  --wl-radius-lg: 14px;
+  --wl-radius-md: 12px;
+  --wl-radius-sm: 10px;
+}
+
+/* Layout container (room for fixed header) */
+main {
+  max-width: 1100px;
+  margin: 120px auto 40px;  /* adjust if your header height differs */
+  padding: 0 16px;
+  color: var(--wl-text);
+}
+
+/* ---- Toolbar (search, filter dropdown, sort) ---- */
+.wl-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 14px;
+}
+
+.wl-searchbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  background: var(--wl-card);
+  border: 1px solid var(--wl-border);
+  border-radius: var(--wl-radius-md);
+  padding: 8px 10px 8px 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.04);
+}
+
+.wl-searchbar input {
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: 0.98rem;
+  background: transparent;
+  color: inherit;
+}
+
+.wl-filter-btn {
+  display: grid;
+  place-items: center;
+  border: none;
+  background: var(--wl-badge-gray-bg);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--wl-radius-sm);
+  cursor: pointer;
+}
+.wl-filter-btn:focus-visible { outline: 2px solid var(--wl-accent); }
+
+.wl-sort-wrap { min-width: 170px; }
+.wl-sort {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--wl-border);
+  border-radius: var(--wl-radius-sm);
+  background: var(--wl-card);
+}
+
+/* ---- Filter dropdown ---- */
+.wl-filter-menu {
+  position: absolute;
+  top: 110%;
+  right: 8px;
+  width: min(92vw, 360px);
+  background: var(--wl-card);
+  border: 1px solid var(--wl-border-strong);
+  border-radius: var(--wl-radius-md);
+  box-shadow: 0 10px 24px rgba(0,0,0,.12);
+  padding: 12px;
+  display: none;
+  z-index: 20;
+}
+.wl-filter-menu.open { display: block; }
+
+.wl-filter-title {
+  font-weight: 800;
+  margin-bottom: 6px;
+  font-size: 0.92rem;
+}
+
+.wl-filter-group {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.wl-filter-group label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.wl-filter-menu select,
+.wl-filter-menu input[type="number"],
+.wl-filter-menu input[type="text"] {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--wl-border);
+  border-radius: var(--wl-radius-sm);
+  background: #fff;
+}
+
+.wl-geo-row { display: flex; gap: 8px; }
+.wl-geo-btn {
+  white-space: nowrap;
+  border: none;
+  background: var(--wl-badge-gray-bg);
+  padding: 8px 10px;
+  border-radius: var(--wl-radius-sm);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.wl-filter-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+.wl-clear, .wl-apply {
+  border: none;
+  padding: 8px 12px;
+  border-radius: var(--wl-radius-sm);
+  cursor: pointer;
+  font-weight: 700;
+}
+.wl-clear  { background: var(--wl-badge-gray-bg); }
+.wl-apply  { background: var(--wl-action); color: #fff; }
+
+/* ---- Grid ---- */
+.wl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+/* ---- Card ---- */
+.wl-card {
+  background: var(--wl-card);
+  border-radius: var(--wl-radius-lg);
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,.08);
+  display: flex;
+  flex-direction: column;
+}
+
+.wl-card img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  background: #eee;
+}
+
+.wl-card-body {
+  padding: 10px 12px 12px;
+  display: grid;
+  gap: 6px;
+}
+
+.wl-title { font-weight: 800; line-height: 1.2; }
+.wl-sub   { color: var(--wl-text-sub); font-size: 0.9rem; }
+
+.wl-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.badge {
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 6px 8px;
+  border-radius: 999px;
+  background: #f1f1f1;
+}
+.badge.green { background: var(--wl-badge-green-bg); color: var(--wl-badge-green-fg); }
+.badge.amber { background: var(--wl-badge-amber-bg); color: var(--wl-badge-amber-fg); }
+.badge.red   { background: var(--wl-badge-red-bg);   color: var(--wl-badge-red-fg); }
+.badge.gray  { background: var(--wl-badge-gray-bg);  color: var(--wl-badge-gray-fg); }
+
+.wl-card-footer {
+  margin-top: 6px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wl-claim {
+  border: none;
+  background: var(--wl-action);
+  color: #fff;
+  padding: 8px 10px;
+  border-radius: var(--wl-radius-sm);
+  font-weight: 700;
+  cursor: pointer;
+}
+.wl-claim:disabled { opacity: .6; cursor: not-allowed; }
+
+/* ---- Utilities / Responsive ---- */
+@media (max-width: 640px) {
+  .wl-toolbar { flex-direction: column; align-items: stretch; gap: 8px; }
+  .wl-sort-wrap { min-width: 0; }
+}
+
+/* Optional: subtle body background for feed pages only */
+body { background: var(--wl-bg); }
+/* --- Title row with chat icon --- */
+.wl-title-row{
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+}
+.wl-icon-btn{
+  border:none; background:#eef0f2; width:36px; height:36px; border-radius:10px;
+  display:grid; place-items:center; cursor:pointer;
+}
+.wl-icon-btn:focus-visible{ outline:2px solid #4CAF50; }
+
+/* --- Meta line under title --- */
+.wl-meta{
+  display:flex; flex-wrap:wrap; gap:8px 14px; margin-top:2px;
+  color:#5b5b5b; font-size:.88rem;
+}
+.wl-meta li{ list-style:none; display:flex; align-items:center; gap:6px; }
+.wl-meta .dot{ width:4px; height:4px; border-radius:999px; background:#cfd5da; }

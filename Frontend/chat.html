@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chat | WasteLess</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="http://localhost:5000/socket.io/socket.io.js"></script>
+  <style>
+    /* Minimal chat polish (scoped) */
+    .chat-wrap { max-width: 900px; margin: 120px auto 40px; padding: 0 16px; }
+    .chat-header {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; margin-bottom: 10px;
+    }
+    .chat-title { font-size: 1.25rem; font-weight: 800; }
+    .chat-sub   { color: #667084; font-size: .95rem; }
+    .chat-meta  { display: flex; gap: 10px; align-items: center; margin-top: 4px; color:#667084; }
+    .chat-meta img { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; background:#eee; }
+    .quick-replies { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 12px; }
+    .chip {
+      border: 1px solid #e3e6ea; background: #f7f8fa; padding: 8px 10px; border-radius: 999px;
+      font-weight: 700; cursor: pointer;
+    }
+    .chip:hover { background: #eef1f4; }
+    .composer { display: flex; gap: 8px; margin-top: 8px; }
+    .composer input { flex: 1; padding: 10px; border: 1px solid #d0d7de; border-radius: 8px; }
+    .composer button { padding: 10px 14px; border: none; background: #e5a53b; color: #fff; font-weight: 800; border-radius: 10px; cursor: pointer; }
+    .composer button:hover { background: #cb8f2d; }
+    /* Use your existing .chat-box & .message; add me/them tinting */
+    .chat-box { background: #f6f7f9; }
+    .message.me   { background:#fff6e6; }
+    .message.them { background:#ffffff; }
+  </style>
+</head>
+<body>
+  <div include-html="header.html"></div>
+
+  <main class="chat-wrap">
+    <header>
+      <div class="chat-header">
+        <div>
+          <div class="chat-title" id="chatTitle">Chat</div>
+          <div class="chat-sub"   id="chatWith">with …</div>
+          <div class="chat-meta"  id="itemMeta" hidden>
+            <img id="itemThumb" alt="" />
+            <span id="itemName"></span>
+          </div>
+        </div>
+        <a href="feed.html" class="chip" aria-label="Back to feed">← Back to feed</a>
+      </div>
+    </header>
+
+    <!-- Sticky reminder -->
+<section class="chat-notice" role="note" aria-live="polite">
+  <div class="chat-notice-icon" aria-hidden="true">📌</div>
+  <div class="chat-notice-body">
+    <strong>Heads up:</strong> this chat is <em>not saved</em>. If you refresh or leave, the history is gone.
+    Please <strong>take a screenshot or write down</strong> any addresses or important details.
+    <ul>
+      <li>Keep messages focused on <strong>pickup/drop-off logistics</strong>.</li>
+      <li>Food details (quality, quantity, etc.) are already listed on the item page.</li>
+      <li>Be respectful. To report issues, email <a href="mailto:wasteless@app.com">wasteless@app.com</a>.</li>
+    </ul>
+  </div>
+</section>
+
+    <section class="quick-replies" id="quickReplies"></section>
+
+    <section class="chat-box" id="chatBox" aria-live="polite" aria-label="Conversation"></section>
+
+    <div class="composer">
+      <input id="inputMsg" type="text" placeholder="Type a message…" autocomplete="off" />
+      <button id="sendBtn" type="button">Send</button>
+    </div>
+  </main>
+
+  <div include-html="footer.html"></div>
+  <script src="main.js"></script>
+
+<script>
+  // ---- auth
+  (function () {
+    const t = localStorage.getItem("token");
+    if (!t) {
+      alert("⚠️ Please login to access this page.");
+      window.location.href = "login.html";
+    }
+  })();
+
+  // ---- params & user
+  const params  = new URLSearchParams(location.search);
+  const itemId  = params.get("item") || "";
+  const peerId  = params.get("to")   || "";                 // other user
+  const myId    = localStorage.getItem("userId") || "";
+  const token   = localStorage.getItem("token")  || "";
+  const myName  = localStorage.getItem("username") || "User";
+
+  // ---- dom
+  const chatBox   = document.getElementById("chatBox");
+  const inputMsg  = document.getElementById("inputMsg");
+  const sendBtn   = document.getElementById("sendBtn");
+  const quick     = document.getElementById("quickReplies");
+  const chatWith  = document.getElementById("chatWith");
+  const chatTitle = document.getElementById("chatTitle");
+  const itemMeta  = document.getElementById("itemMeta");
+  const itemThumb = document.getElementById("itemThumb");
+  const itemName  = document.getElementById("itemName");
+
+  // ---- utils
+  const MINE="me", THEIRS="them";
+  const escapeHtml = (s) => (s ?? "").toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const autoLink   = (s) => escapeHtml(s).replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+  function pushMessage(author, text){
+    const div = document.createElement("div");
+    div.className = `message ${author}`;
+    div.innerHTML = autoLink(text);
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  // ---- stable room id: item + both users (sorted)
+  function makeRoomId(item, a, b){
+    if(!item || !a || !b) return null;
+    return `room:${item}:${[a,b].sort().join(':')}`;
+  }
+  const roomId = makeRoomId(itemId, myId, peerId);
+  console.log("🧩 roomId =", roomId || "(missing — local only)");
+
+  // ---- socket.io (server must be on http://localhost:5000 with httpServer.listen)
+  const socket = io("http://localhost:5000", {
+    transports: ["websocket"],
+    auth: { token }
+  });
+
+  socket.on("connect", () => {
+    console.log("🔌 socket connected");
+    if (roomId) {
+      socket.emit("join", { roomId, userId: myId, name: myName });
+    } else {
+      console.warn("Missing itemId or peerId; chat will be local-only.");
+    }
+  });
+
+  socket.on("history", (msgs = []) => {
+    msgs.forEach(m => pushMessage(m.userId === myId ? MINE : THEIRS, m.text));
+  });
+
+  socket.on("message", (m) => {
+    pushMessage(m.userId === myId ? MINE : THEIRS, m.text);
+  });
+
+  function send(text){
+    const t = (text ?? inputMsg.value).trim();
+    if (!t) return;
+    if (roomId) {
+      // server echoes; don’t push locally here
+      socket.emit("message", { roomId, userId: myId, text: t });
+    } else {
+      // fallback if params missing
+      pushMessage(MINE, t);
+    }
+    inputMsg.value = "";
+    inputMsg.focus();
+  }
+
+  sendBtn.addEventListener("click", () => send());
+  inputMsg.addEventListener("keydown", (e) => { if (e.key === "Enter") send(); });
+
+  // ---- quick replies
+  const iAmOwner = (myId && peerId && myId === peerId);
+  const QUICK_USER  = ["I am interested","Where is pickup?","Can you do it at a public location?","Can you do closer?"];
+  const QUICK_OWNER = ["Are you sure?","Did you read all the details?", {label:"Pickup here…",type:"location"}, {label:"Change location",type:"location"}];
+
+  function buildChips(){
+    quick.innerHTML = "";
+    (iAmOwner ? QUICK_OWNER : QUICK_USER).forEach(q => {
+      const label = typeof q === "string" ? q : q.label;
+      const type  = typeof q === "string" ? "text" : (q.type || "text");
+      const btn = document.createElement("button");
+      btn.className = "chip"; btn.type = "button"; btn.textContent = label;
+      btn.addEventListener("click", () => {
+        if (type === "location") {
+          const addr = prompt("Enter pickup address or paste a map link:");
+          if (addr) send(`Pickup here: ${addr}`);
+        } else {
+          send(label);
+        }
+      });
+      quick.appendChild(btn);
+    });
+  }
+
+  // ---- header info (best-effort)
+  const USER_API_BASE = "http://localhost:5000/api/users";
+  const FOOD_API_BASE = "http://localhost:5000/api/food";
+  async function tryJSON(url){
+    try{
+      const r = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+      if (!r.ok) throw 0; return await r.json();
+    }catch{ return null; }
+  }
+  async function initHeader(){
+    let peerName = "User";
+    if (peerId){
+      const u = await tryJSON(`${USER_API_BASE}/${encodeURIComponent(peerId)}`);
+      if (u) peerName = u.username || u.name || u.displayName || "User";
+    }
+    document.getElementById("chatWith").textContent = `with ${peerName}`;
+    if (itemId){
+      const it = await tryJSON(`${FOOD_API_BASE}/${encodeURIComponent(itemId)}`);
+      if (it){
+        const title = it.title || it.name || "this item";
+        chatTitle.textContent = `Chat about ${title}`;
+        itemName.textContent  = title;
+        itemThumb.src = it.imageUrl || it.photoUrl || "https://picsum.photos/64?food";
+        itemThumb.alt = title;
+        itemMeta.hidden = false;
+      }
+    }
+  }
+
+  // ---- boot
+  buildChips();
+  initHeader();
+</script>
+
+
+</body>
+</html>
